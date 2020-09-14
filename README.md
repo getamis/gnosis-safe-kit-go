@@ -14,9 +14,13 @@ make examples
 ```
 Generic targets:
   all                         - Build all targets marked with [*]
+* examples
 
 Code generation targets:
-  gen                         - Generate API code from .proto files and mocks
+  gen                         - Generate Go code from various sources
+
+Examples targets:
+  examples                    - Build all examples
 
 Test targets:
   test                        - Run all tests
