@@ -92,9 +92,13 @@ help:
 	@echo  '  all                         - Build all targets marked with [*]'
 	@for app in $(APPS); do \
 		printf "* %s\n" $$app; done
+	@echo  '* examples'
 	@echo  ''
 	@echo  'Code generation targets:'
-	@echo  '  gen                         - Generate API code from .proto files and mocks'
+	@echo  '  gen                         - Generate Go code from various sources'
+	@echo  ''
+	@echo  'Examples targets:'
+	@echo  '  examples                    - Build all examples'
 	@echo  ''
 	@echo  'Test targets:'
 	@echo  '  test                        - Run all tests'
