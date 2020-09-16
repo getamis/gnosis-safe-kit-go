@@ -24,25 +24,19 @@ func main() {
 		log.Fatalf("Failed to connect to the Ethereum client: %v", err)
 	}
 
-	privateKeyHex := os.Getenv("PRIVATE_KEY")
-	if len(privateKeyHex) == 0 {
-		log.Fatalln("Please specify PRIVATE_KEY in the environment variables")
+	relayerPrivateKeyHex := os.Getenv("RELAYER_PRIVATE_KEY")
+	if len(relayerPrivateKeyHex) == 0 {
+		log.Fatalln("Please specify RELAYER_PRIVATE_KEY in the environment variables")
 	}
 
-	if strings.HasPrefix(privateKeyHex, "0x") || strings.HasPrefix(privateKeyHex, "0X") {
-		privateKeyHex = privateKeyHex[2:]
-	}
-
-	privateKey, err := crypto.ToECDSA(common.Hex2Bytes(privateKeyHex))
+	relayerPrivateKey, err := crypto.ToECDSA(common.FromHex(relayerPrivateKeyHex))
 	if err != nil {
-		log.Fatalf("Failed to load the private key: %v", err)
+		log.Fatalf("Failed to load relayer's private key: %v", err)
 	}
 
-	auth := bind.NewKeyedTransactor(privateKey)
-	owner := crypto.PubkeyToAddress(privateKey.PublicKey)
-	_ = owner
+	relayer := bind.NewKeyedTransactor(relayerPrivateKey)
 
-	proxyFactory, err := contracts.NewGnosisSafeProxyFactory(common.HexToAddress("0xB410f2406688bda9B9005Df8C9881dfFc047f90e"), conn)
+	proxyFactory, err := contracts.NewGnosisSafeProxyFactory(common.HexToAddress(os.Getenv("PROXY_FACTORY_ADDRESS")), conn)
 	if err != nil {
 		log.Fatalf("Failed to create proxy factory: %v", err)
 	}
@@ -53,8 +47,8 @@ func main() {
 			Pending: true,
 		},
 		TransactOpts: bind.TransactOpts{
-			From:     auth.From,
-			Signer:   auth.Signer,
+			From:     relayer.From,
+			Signer:   relayer.Signer,
 			GasLimit: big.NewInt(1000000).Uint64(),
 		},
 	}
@@ -76,15 +70,27 @@ func main() {
 		return gnosisSafeABI.Pack("setup", owners, threshold, to, data, fallbackHandler, paymentToken, payment, paymentReceiver)
 	}
 
+	alicePrivateKeyHex := os.Getenv("ALICE_PRIVATE_KEY")
+	if len(alicePrivateKeyHex) == 0 {
+		log.Fatalln("Please specify ALICE_PRIVATE_KEY in the environment variables")
+	}
+
+	alicePrivateKey, err := crypto.ToECDSA(common.FromHex(alicePrivateKeyHex))
+	if err != nil {
+		log.Fatalf("Failed to load Alice's private key: %v", err)
+	}
+
+	aliceAddress := crypto.PubkeyToAddress(alicePrivateKey.PublicKey)
+
 	initializer, err := gnosisSafeABIpacker(
-		[]common.Address{owner}, // owners
-		big.NewInt(1),           // threshold, we have only one owner
-		common.Address{},        // to common.Address, keep it empty
-		[]byte{},                // data []byte
-		common.Address{},        // fallbackHandler common.Address
-		common.Address{},        // paymentToken common.Address
-		big.NewInt(0),           // payment *big.Int
-		common.Address{},        // paymentReceiver common.Address
+		[]common.Address{aliceAddress}, // owners
+		big.NewInt(1),                  // threshold, we have only one owner
+		common.Address{},               // to common.Address, keep it empty
+		[]byte{},                       // data []byte
+		common.Address{},               // fallbackHandler common.Address
+		common.Address{},               // paymentToken common.Address
+		big.NewInt(0),                  // payment *big.Int
+		common.Address{},               // paymentReceiver common.Address
 	)
 	if err != nil {
 		log.Fatalf("Failed to pack initializer ABI: %v", err)
@@ -96,7 +102,17 @@ func main() {
 		log.Fatalf("Failed to create proxy with nonce %v: %v", nonce, err)
 	}
 
-	fmt.Println("tx hash:", tx.Hash().Hex())
-	fmt.Println("gas:", tx.Gas())
-	fmt.Println("gas price:", tx.GasPrice())
+	fmt.Println("Tx Hash:", tx.Hash().Hex())
+	fmt.Println("Cost:", tx.Cost())
+
+	eventCh := make(chan *contracts.GnosisSafeProxyFactoryProxyCreation, 1)
+	subscription, err := proxyFactory.WatchProxyCreation(&bind.WatchOpts{}, eventCh)
+	if err != nil {
+		log.Fatalf("Failed to watch ProxyCreation: %v", err)
+	}
+
+	proxyCreationEvent := <-eventCh
+	subscription.Unsubscribe()
+
+	fmt.Println("Proxy Address:", proxyCreationEvent.Proxy.Hex())
 }
