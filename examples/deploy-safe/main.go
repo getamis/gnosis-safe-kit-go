@@ -32,9 +32,9 @@ func main() {
 	}
 
 	auth := bind.NewKeyedTransactor(privateKey)
-	auth.GasLimit = 1000000
+	auth.GasLimit = 7000000
 
-	address, tx, _, err := contracts.DeployGnosisSafeProxyFactory(auth, conn)
+	address, tx, _, err := contracts.DeployGnosisSafe(auth, conn)
 	if err != nil {
 		log.Fatalf("Failed to deploy GnosisSafe Proxy Factory: %v", err)
 	}
