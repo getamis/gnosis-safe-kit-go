@@ -154,7 +154,7 @@ func bindGnosisSafeProxyFactory(address common.Address, caller bind.ContractCall
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_GnosisSafeProxyFactory *GnosisSafeProxyFactoryRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
+func (_GnosisSafeProxyFactory *GnosisSafeProxyFactoryRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
 	return _GnosisSafeProxyFactory.Contract.GnosisSafeProxyFactoryCaller.contract.Call(opts, result, method, params...)
 }
 
@@ -173,7 +173,7 @@ func (_GnosisSafeProxyFactory *GnosisSafeProxyFactoryRaw) Transact(opts *bind.Tr
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_GnosisSafeProxyFactory *GnosisSafeProxyFactoryCallerRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
+func (_GnosisSafeProxyFactory *GnosisSafeProxyFactoryCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
 	return _GnosisSafeProxyFactory.Contract.contract.Call(opts, result, method, params...)
 }
 
@@ -192,12 +192,17 @@ func (_GnosisSafeProxyFactory *GnosisSafeProxyFactoryTransactorRaw) Transact(opt
 //
 // Solidity: function proxyCreationCode() pure returns(bytes)
 func (_GnosisSafeProxyFactory *GnosisSafeProxyFactoryCaller) ProxyCreationCode(opts *bind.CallOpts) ([]byte, error) {
-	var (
-		ret0 = new([]byte)
-	)
-	out := ret0
-	err := _GnosisSafeProxyFactory.contract.Call(opts, out, "proxyCreationCode")
-	return *ret0, err
+	var out []interface{}
+	err := _GnosisSafeProxyFactory.contract.Call(opts, &out, "proxyCreationCode")
+
+	if err != nil {
+		return *new([]byte), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new([]byte)).(*[]byte)
+
+	return out0, err
+
 }
 
 // ProxyCreationCode is a free data retrieval call binding the contract method 0x53e5d935.
@@ -218,12 +223,17 @@ func (_GnosisSafeProxyFactory *GnosisSafeProxyFactoryCallerSession) ProxyCreatio
 //
 // Solidity: function proxyRuntimeCode() pure returns(bytes)
 func (_GnosisSafeProxyFactory *GnosisSafeProxyFactoryCaller) ProxyRuntimeCode(opts *bind.CallOpts) ([]byte, error) {
-	var (
-		ret0 = new([]byte)
-	)
-	out := ret0
-	err := _GnosisSafeProxyFactory.contract.Call(opts, out, "proxyRuntimeCode")
-	return *ret0, err
+	var out []interface{}
+	err := _GnosisSafeProxyFactory.contract.Call(opts, &out, "proxyRuntimeCode")
+
+	if err != nil {
+		return *new([]byte), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new([]byte)).(*[]byte)
+
+	return out0, err
+
 }
 
 // ProxyRuntimeCode is a free data retrieval call binding the contract method 0xaddacc0f.

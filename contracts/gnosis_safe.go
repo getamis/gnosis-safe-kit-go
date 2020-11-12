@@ -154,7 +154,7 @@ func bindGnosisSafe(address common.Address, caller bind.ContractCaller, transact
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_GnosisSafe *GnosisSafeRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
+func (_GnosisSafe *GnosisSafeRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
 	return _GnosisSafe.Contract.GnosisSafeCaller.contract.Call(opts, result, method, params...)
 }
 
@@ -173,7 +173,7 @@ func (_GnosisSafe *GnosisSafeRaw) Transact(opts *bind.TransactOpts, method strin
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_GnosisSafe *GnosisSafeCallerRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
+func (_GnosisSafe *GnosisSafeCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
 	return _GnosisSafe.Contract.contract.Call(opts, result, method, params...)
 }
 
@@ -192,12 +192,17 @@ func (_GnosisSafe *GnosisSafeTransactorRaw) Transact(opts *bind.TransactOpts, me
 //
 // Solidity: function NAME() view returns(string)
 func (_GnosisSafe *GnosisSafeCaller) NAME(opts *bind.CallOpts) (string, error) {
-	var (
-		ret0 = new(string)
-	)
-	out := ret0
-	err := _GnosisSafe.contract.Call(opts, out, "NAME")
-	return *ret0, err
+	var out []interface{}
+	err := _GnosisSafe.contract.Call(opts, &out, "NAME")
+
+	if err != nil {
+		return *new(string), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(string)).(*string)
+
+	return out0, err
+
 }
 
 // NAME is a free data retrieval call binding the contract method 0xa3f4df7e.
@@ -218,12 +223,17 @@ func (_GnosisSafe *GnosisSafeCallerSession) NAME() (string, error) {
 //
 // Solidity: function VERSION() view returns(string)
 func (_GnosisSafe *GnosisSafeCaller) VERSION(opts *bind.CallOpts) (string, error) {
-	var (
-		ret0 = new(string)
-	)
-	out := ret0
-	err := _GnosisSafe.contract.Call(opts, out, "VERSION")
-	return *ret0, err
+	var out []interface{}
+	err := _GnosisSafe.contract.Call(opts, &out, "VERSION")
+
+	if err != nil {
+		return *new(string), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(string)).(*string)
+
+	return out0, err
+
 }
 
 // VERSION is a free data retrieval call binding the contract method 0xffa1ad74.
@@ -244,12 +254,17 @@ func (_GnosisSafe *GnosisSafeCallerSession) VERSION() (string, error) {
 //
 // Solidity: function approvedHashes(address , bytes32 ) view returns(uint256)
 func (_GnosisSafe *GnosisSafeCaller) ApprovedHashes(opts *bind.CallOpts, arg0 common.Address, arg1 [32]byte) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _GnosisSafe.contract.Call(opts, out, "approvedHashes", arg0, arg1)
-	return *ret0, err
+	var out []interface{}
+	err := _GnosisSafe.contract.Call(opts, &out, "approvedHashes", arg0, arg1)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // ApprovedHashes is a free data retrieval call binding the contract method 0x7d832974.
@@ -270,12 +285,17 @@ func (_GnosisSafe *GnosisSafeCallerSession) ApprovedHashes(arg0 common.Address, 
 //
 // Solidity: function domainSeparator() view returns(bytes32)
 func (_GnosisSafe *GnosisSafeCaller) DomainSeparator(opts *bind.CallOpts) ([32]byte, error) {
-	var (
-		ret0 = new([32]byte)
-	)
-	out := ret0
-	err := _GnosisSafe.contract.Call(opts, out, "domainSeparator")
-	return *ret0, err
+	var out []interface{}
+	err := _GnosisSafe.contract.Call(opts, &out, "domainSeparator")
+
+	if err != nil {
+		return *new([32]byte), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
+
+	return out0, err
+
 }
 
 // DomainSeparator is a free data retrieval call binding the contract method 0xf698da25.
@@ -296,12 +316,17 @@ func (_GnosisSafe *GnosisSafeCallerSession) DomainSeparator() ([32]byte, error) 
 //
 // Solidity: function encodeTransactionData(address to, uint256 value, bytes data, uint8 operation, uint256 safeTxGas, uint256 baseGas, uint256 gasPrice, address gasToken, address refundReceiver, uint256 _nonce) view returns(bytes)
 func (_GnosisSafe *GnosisSafeCaller) EncodeTransactionData(opts *bind.CallOpts, to common.Address, value *big.Int, data []byte, operation uint8, safeTxGas *big.Int, baseGas *big.Int, gasPrice *big.Int, gasToken common.Address, refundReceiver common.Address, _nonce *big.Int) ([]byte, error) {
-	var (
-		ret0 = new([]byte)
-	)
-	out := ret0
-	err := _GnosisSafe.contract.Call(opts, out, "encodeTransactionData", to, value, data, operation, safeTxGas, baseGas, gasPrice, gasToken, refundReceiver, _nonce)
-	return *ret0, err
+	var out []interface{}
+	err := _GnosisSafe.contract.Call(opts, &out, "encodeTransactionData", to, value, data, operation, safeTxGas, baseGas, gasPrice, gasToken, refundReceiver, _nonce)
+
+	if err != nil {
+		return *new([]byte), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new([]byte)).(*[]byte)
+
+	return out0, err
+
 }
 
 // EncodeTransactionData is a free data retrieval call binding the contract method 0xe86637db.
@@ -322,12 +347,17 @@ func (_GnosisSafe *GnosisSafeCallerSession) EncodeTransactionData(to common.Addr
 //
 // Solidity: function getMessageHash(bytes message) view returns(bytes32)
 func (_GnosisSafe *GnosisSafeCaller) GetMessageHash(opts *bind.CallOpts, message []byte) ([32]byte, error) {
-	var (
-		ret0 = new([32]byte)
-	)
-	out := ret0
-	err := _GnosisSafe.contract.Call(opts, out, "getMessageHash", message)
-	return *ret0, err
+	var out []interface{}
+	err := _GnosisSafe.contract.Call(opts, &out, "getMessageHash", message)
+
+	if err != nil {
+		return *new([32]byte), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
+
+	return out0, err
+
 }
 
 // GetMessageHash is a free data retrieval call binding the contract method 0x0a1028c4.
@@ -348,12 +378,17 @@ func (_GnosisSafe *GnosisSafeCallerSession) GetMessageHash(message []byte) ([32]
 //
 // Solidity: function getModules() view returns(address[])
 func (_GnosisSafe *GnosisSafeCaller) GetModules(opts *bind.CallOpts) ([]common.Address, error) {
-	var (
-		ret0 = new([]common.Address)
-	)
-	out := ret0
-	err := _GnosisSafe.contract.Call(opts, out, "getModules")
-	return *ret0, err
+	var out []interface{}
+	err := _GnosisSafe.contract.Call(opts, &out, "getModules")
+
+	if err != nil {
+		return *new([]common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new([]common.Address)).(*[]common.Address)
+
+	return out0, err
+
 }
 
 // GetModules is a free data retrieval call binding the contract method 0xb2494df3.
@@ -377,13 +412,19 @@ func (_GnosisSafe *GnosisSafeCaller) GetModulesPaginated(opts *bind.CallOpts, st
 	Array []common.Address
 	Next  common.Address
 }, error) {
-	ret := new(struct {
+	var out []interface{}
+	err := _GnosisSafe.contract.Call(opts, &out, "getModulesPaginated", start, pageSize)
+
+	outstruct := new(struct {
 		Array []common.Address
 		Next  common.Address
 	})
-	out := ret
-	err := _GnosisSafe.contract.Call(opts, out, "getModulesPaginated", start, pageSize)
-	return *ret, err
+
+	outstruct.Array = out[0].([]common.Address)
+	outstruct.Next = out[1].(common.Address)
+
+	return *outstruct, err
+
 }
 
 // GetModulesPaginated is a free data retrieval call binding the contract method 0xcc2f8452.
@@ -410,12 +451,17 @@ func (_GnosisSafe *GnosisSafeCallerSession) GetModulesPaginated(start common.Add
 //
 // Solidity: function getOwners() view returns(address[])
 func (_GnosisSafe *GnosisSafeCaller) GetOwners(opts *bind.CallOpts) ([]common.Address, error) {
-	var (
-		ret0 = new([]common.Address)
-	)
-	out := ret0
-	err := _GnosisSafe.contract.Call(opts, out, "getOwners")
-	return *ret0, err
+	var out []interface{}
+	err := _GnosisSafe.contract.Call(opts, &out, "getOwners")
+
+	if err != nil {
+		return *new([]common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new([]common.Address)).(*[]common.Address)
+
+	return out0, err
+
 }
 
 // GetOwners is a free data retrieval call binding the contract method 0xa0e67e2b.
@@ -436,12 +482,17 @@ func (_GnosisSafe *GnosisSafeCallerSession) GetOwners() ([]common.Address, error
 //
 // Solidity: function getThreshold() view returns(uint256)
 func (_GnosisSafe *GnosisSafeCaller) GetThreshold(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _GnosisSafe.contract.Call(opts, out, "getThreshold")
-	return *ret0, err
+	var out []interface{}
+	err := _GnosisSafe.contract.Call(opts, &out, "getThreshold")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // GetThreshold is a free data retrieval call binding the contract method 0xe75235b8.
@@ -462,12 +513,17 @@ func (_GnosisSafe *GnosisSafeCallerSession) GetThreshold() (*big.Int, error) {
 //
 // Solidity: function getTransactionHash(address to, uint256 value, bytes data, uint8 operation, uint256 safeTxGas, uint256 baseGas, uint256 gasPrice, address gasToken, address refundReceiver, uint256 _nonce) view returns(bytes32)
 func (_GnosisSafe *GnosisSafeCaller) GetTransactionHash(opts *bind.CallOpts, to common.Address, value *big.Int, data []byte, operation uint8, safeTxGas *big.Int, baseGas *big.Int, gasPrice *big.Int, gasToken common.Address, refundReceiver common.Address, _nonce *big.Int) ([32]byte, error) {
-	var (
-		ret0 = new([32]byte)
-	)
-	out := ret0
-	err := _GnosisSafe.contract.Call(opts, out, "getTransactionHash", to, value, data, operation, safeTxGas, baseGas, gasPrice, gasToken, refundReceiver, _nonce)
-	return *ret0, err
+	var out []interface{}
+	err := _GnosisSafe.contract.Call(opts, &out, "getTransactionHash", to, value, data, operation, safeTxGas, baseGas, gasPrice, gasToken, refundReceiver, _nonce)
+
+	if err != nil {
+		return *new([32]byte), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
+
+	return out0, err
+
 }
 
 // GetTransactionHash is a free data retrieval call binding the contract method 0xd8d11f78.
@@ -488,12 +544,17 @@ func (_GnosisSafe *GnosisSafeCallerSession) GetTransactionHash(to common.Address
 //
 // Solidity: function isModuleEnabled(address module) view returns(bool)
 func (_GnosisSafe *GnosisSafeCaller) IsModuleEnabled(opts *bind.CallOpts, module common.Address) (bool, error) {
-	var (
-		ret0 = new(bool)
-	)
-	out := ret0
-	err := _GnosisSafe.contract.Call(opts, out, "isModuleEnabled", module)
-	return *ret0, err
+	var out []interface{}
+	err := _GnosisSafe.contract.Call(opts, &out, "isModuleEnabled", module)
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	return out0, err
+
 }
 
 // IsModuleEnabled is a free data retrieval call binding the contract method 0x2d9ad53d.
@@ -514,12 +575,17 @@ func (_GnosisSafe *GnosisSafeCallerSession) IsModuleEnabled(module common.Addres
 //
 // Solidity: function isOwner(address owner) view returns(bool)
 func (_GnosisSafe *GnosisSafeCaller) IsOwner(opts *bind.CallOpts, owner common.Address) (bool, error) {
-	var (
-		ret0 = new(bool)
-	)
-	out := ret0
-	err := _GnosisSafe.contract.Call(opts, out, "isOwner", owner)
-	return *ret0, err
+	var out []interface{}
+	err := _GnosisSafe.contract.Call(opts, &out, "isOwner", owner)
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	return out0, err
+
 }
 
 // IsOwner is a free data retrieval call binding the contract method 0x2f54bf6e.
@@ -540,12 +606,17 @@ func (_GnosisSafe *GnosisSafeCallerSession) IsOwner(owner common.Address) (bool,
 //
 // Solidity: function nonce() view returns(uint256)
 func (_GnosisSafe *GnosisSafeCaller) Nonce(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _GnosisSafe.contract.Call(opts, out, "nonce")
-	return *ret0, err
+	var out []interface{}
+	err := _GnosisSafe.contract.Call(opts, &out, "nonce")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // Nonce is a free data retrieval call binding the contract method 0xaffed0e0.
@@ -566,12 +637,17 @@ func (_GnosisSafe *GnosisSafeCallerSession) Nonce() (*big.Int, error) {
 //
 // Solidity: function signedMessages(bytes32 ) view returns(uint256)
 func (_GnosisSafe *GnosisSafeCaller) SignedMessages(opts *bind.CallOpts, arg0 [32]byte) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _GnosisSafe.contract.Call(opts, out, "signedMessages", arg0)
-	return *ret0, err
+	var out []interface{}
+	err := _GnosisSafe.contract.Call(opts, &out, "signedMessages", arg0)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // SignedMessages is a free data retrieval call binding the contract method 0x5ae6bd37.
