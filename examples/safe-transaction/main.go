@@ -1,26 +1,35 @@
 package main
 
 import (
-	"context"
+	"crypto/ecdsa"
 	"fmt"
 	"log"
 	"math/big"
 	"os"
-	"strings"
 
-	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/ethereum/go-ethereum/rlp"
 	_ "github.com/joho/godotenv/autoload"
 
 	"github.com/getamis/gnosis-safe-kit-go"
 )
 
 //go:generate go run github.com/ethereum/go-ethereum/cmd/abigen --type=Token --lang=go --pkg=main --abi $PWD/examples/safe-transaction/IERC20.abi --out $PWD/examples/safe-transaction/ierc20.go
+
+func signHash(hash []byte, privateKey *ecdsa.PrivateKey) ([]byte, error) {
+	sig, err := crypto.Sign(hash, privateKey)
+	if err != nil {
+		return nil, err
+	}
+
+	if sig[64] < 2 {
+		sig[64] += 27 // Transform V from 0/1 to 27/28 according to the yellow paper
+	}
+
+	return sig, nil
+}
 
 func main() {
 	// Create an IPC based RPC connection to a remote node
@@ -35,21 +44,7 @@ func main() {
 		log.Fatalf("Failed to initialize the safe account: %v", err)
 	}
 
-	tokenAddress := common.HexToAddress(os.Getenv("ERC20_TOKEN_ADDRESS"))
-
-	tokenTransferAbiPacker := func(recipient common.Address, amount *big.Int) ([]byte, error) {
-		packer, err := abi.JSON(strings.NewReader(TokenABI))
-		if err != nil {
-			return nil, err
-		}
-		return packer.Pack("transfer", recipient, amount)
-	}
-
 	recipient := common.HexToAddress(os.Getenv("BOB_ADDRESS"))
-	contractCall, err := tokenTransferAbiPacker(recipient, big.NewInt(1))
-	if err != nil {
-		log.Fatalf("Failed to pack the transfer tx: %v", err)
-	}
 
 	alicePrivateKeyHex := os.Getenv("ALICE_PRIVATE_KEY")
 	if len(alicePrivateKeyHex) == 0 {
@@ -62,25 +57,12 @@ func main() {
 	}
 
 	alice := bind.NewKeyedTransactor(alicePrivateKey)
-	nonce, err := conn.PendingNonceAt(context.Background(), alice.From)
-	if err != nil {
-		log.Fatalf("Failed to get pending nonce: %v", err)
-	}
 
-	gasLimit := uint64(2000000)
-	gasPrice := big.NewInt(200000000000)
+	fmt.Println("Alice address:", alice.From.Hex())
 
-	// Create the transaction, sign it and schedule it for execution
-	aliceTx := types.NewTransaction(nonce, tokenAddress, new(big.Int), gasLimit, gasPrice, contractCall)
-
-	signedAliceTx, err := alice.Signer(types.HomesteadSigner{}, alice.From, aliceTx)
-	if err != nil {
-		log.Fatalf("Failed to sign the transaction: %v", err)
-	}
-	rawSignedAliceTx, err := rlp.EncodeToBytes(signedAliceTx)
-	if err != nil {
-		log.Fatalf("Failed to encode the signed transaction: %v", err)
-	}
+	// If the gasPrice is 0 we assume that nearly all available gas can be used (it is always more than safeTxGas)
+	gasPrice := big.NewInt(0)
+	safeTxGas := big.NewInt(0)
 
 	relayerPrivateKeyHex := os.Getenv("RELAYER_PRIVATE_KEY")
 	if len(relayerPrivateKeyHex) == 0 {
@@ -94,6 +76,8 @@ func main() {
 
 	relayer := bind.NewKeyedTransactor(relayerPrivateKey)
 
+	fmt.Println("relayer address:", relayer.From.Hex())
+
 	proxyNonce, err := safeContract.Nonce(&bind.CallOpts{
 		Pending: true,
 	})
@@ -102,15 +86,15 @@ func main() {
 	}
 
 	safeTx := gnosis.SafeTransaction{
-		To:             aliceProxyAddress,   // to
-		Value:          new(big.Int),        // value
-		Data:           rawSignedAliceTx,    // data, the contract call user wants
-		Operation:      gnosis.DelegateCall, // operation
-		SafeTxGas:      new(big.Int),        // safeTxGas
-		BaseGas:        new(big.Int),        // baseGas
-		GasPrice:       new(big.Int),        // gasPrice
-		GasToken:       common.Address{},    // gasToken
-		RefundReceiver: common.Address{},    // refundReceiver
+		To:             recipient,                         // to
+		Value:          new(big.Int).SetInt64(1000000000), // value
+		Data:           nil,                               // data, the contract call user wants
+		Operation:      gnosis.Call,                       // operation
+		SafeTxGas:      safeTxGas,                         // safeTxGas
+		BaseGas:        new(big.Int),                      // baseGas
+		GasPrice:       gasPrice,                          // gasPrice
+		GasToken:       common.Address{},                  // gasToken
+		RefundReceiver: common.Address{},                  // refundReceiver
 	}
 
 	rawSafeTx, err := safeContract.EncodeTransactionData(
@@ -135,7 +119,7 @@ func main() {
 	safeTxHashBytes := crypto.Keccak256(rawSafeTx)
 
 	// alice signs the safe transaction
-	safeTxSignature, err := crypto.Sign(safeTxHashBytes, alicePrivateKey)
+	safeTxSignature, err := signHash(safeTxHashBytes, alicePrivateKey)
 	if err != nil {
 		log.Fatalf("Failed to sign the safe transaction: %v", err)
 	}
@@ -143,23 +127,24 @@ func main() {
 	// Relay the signed transaction
 	relayTx, err := safeContract.ExecTransaction(
 		&bind.TransactOpts{
-			From:   relayer.From,
-			Signer: relayer.Signer,
+			From:     relayer.From,
+			Signer:   relayer.Signer,
+			GasLimit: 200000,
 		},
-		aliceProxyAddress,   // to
-		new(big.Int),        // value
-		rawSignedAliceTx,    // data
-		gnosis.DelegateCall, // operation
-		new(big.Int),        // safeTxGas
-		new(big.Int),        // baseGas
-		new(big.Int),        // gasPrice
-		common.Address{},    // gasToken
-		common.Address{},    // refundReceiver
-		safeTxSignature,     // signature
+		safeTx.To,             // to
+		safeTx.Value,          // value
+		safeTx.Data,           // data
+		gnosis.Call,           // operation
+		safeTx.SafeTxGas,      // safeTxGas
+		safeTx.BaseGas,        // baseGas
+		safeTx.GasPrice,       // gasPrice
+		safeTx.GasToken,       // gasToken
+		safeTx.RefundReceiver, // refundReceiver
+		safeTxSignature,       // signature
 	)
 	if err != nil {
 		log.Fatalf("Failed to relay the transaction: %v", err)
 	}
 
-	fmt.Println(relayTx.Hash())
+	fmt.Println(relayTx.Hash().Hex())
 }
