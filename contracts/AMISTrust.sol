@@ -21,6 +21,7 @@ contract AMISTrust {
         payable
         returns (bool success)
     {
+        require(contractAddr!=address(0), "Invalid contract address");
         GnosisSafe gnosisSafeContract = GnosisSafe(contractAddr);
         (success, ) = contractAddr.call.value(msg.value)("");
         require(success, "Failed to send value");
