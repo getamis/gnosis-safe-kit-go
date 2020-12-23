@@ -22,9 +22,11 @@ contract AMISTrust {
         returns (bool success)
     {
         require(contractAddr!=address(0), "Invalid contract address");
+        if (msg.value > 0) {
+            (success, ) = contractAddr.call.value(msg.value)("");
+            require(success, "Failed to send value");
+        }
         GnosisSafe gnosisSafeContract = GnosisSafe(contractAddr);
-        (success, ) = contractAddr.call.value(msg.value)("");
-        require(success, "Failed to send value");
         success = gnosisSafeContract.execTransaction(to, value, data, operation, safeTxGas, baseGas, gasPrice, gasToken, refundReceiver, signatures);
         require(success, "Failed to exec tranasction");
     }
